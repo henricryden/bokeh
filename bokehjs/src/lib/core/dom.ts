@@ -668,12 +668,29 @@ export function toggle_attribute(el: HTMLElement, attr: string, state?: boolean)
   }
 }
 
-type WhitespaceKeys = "Tab" | "Enter" | " "
-type UIKeys = "Escape"
-type NavigationKeys = "Home" | "End" | "PageUp" | "PageDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown"
-type EditingKeys = "Backspace" | "Delete"
+type PrintableKeys =
+  "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" |
+  "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" |
+  "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" |
+  "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" |
+  "~" | "!" | "@" | "#" | "$" | "%" | "^" | "&" | "*" | "(" | ")" | "_" | "+" |
+  "`" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0" | "-" | "-" |
+  "{" | "}" | "|" | ":" | "\""| "<" | ">" | "?" |
+  "[" | "]" | "\\"| ";" | "'" | "," | "." | "/"
 
-export type Keys = WhitespaceKeys | UIKeys | NavigationKeys | EditingKeys
+type WhitespaceKeys = "Enter" | "Tab" | " "
+
+type UIKeys = "Escape"
+
+type NavigationKeys = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp" | "End" | "Home" | "PageDown" | "PageUp"
+
+type EditingKeys = "Backspace" | "Delete" | "Insert"
+
+type FunctionKeys = "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8" | "F9" | "F10" | "F11" | "F12"
+
+type ModifierKeys = "Ctrl" | "Shift" | "Alt"
+
+export type Keys = PrintableKeys | WhitespaceKeys | UIKeys | NavigationKeys | EditingKeys | FunctionKeys | ModifierKeys
 
 export enum MouseButton {
   None = 0b0,

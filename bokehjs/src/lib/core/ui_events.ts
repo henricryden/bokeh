@@ -5,14 +5,15 @@ import {offset_bbox} from "./dom"
 import * as events from "./bokeh_events"
 import type {ViewStorage} from "./build_views"
 import {getDeltaY} from "./util/wheel"
-import {reversed, is_empty} from "./util/array"
+import {reversed, is_empty, sort_by} from "./util/array"
 import {isObject, isBoolean} from "./util/types"
 import type {PlotView} from "../models/plots/plot"
-import type {Tool, ToolView} from "../models/tools/tool"
+import type {Tool, ToolView, KeyBinding} from "../models/tools/tool"
 import type {ToolLike} from "../models/tools/tool_proxy"
 import {ToolProxy} from "../models/tools/tool_proxy"
 import type {RendererView} from "../models/renderers/renderer"
 import type {CanvasView} from "../models/canvas/canvas"
+//import {assert} from "./util/assert"
 
 import type {TapEvent, PanEvent, PinchEvent, RotateEvent, MoveEvent, KeyModifiers} from "./ui_gestures"
 export type {TapEvent, PanEvent, PinchEvent, RotateEvent, MoveEvent, KeyModifiers} from "./ui_gestures"
@@ -199,6 +200,7 @@ export class UIEventBus {
   }
 
   protected readonly _tools: ViewStorage<ToolLike<Tool>> = new Map()
+  protected readonly _key_bindings: Map<ToolView, KeyBinding[]> = new Map()
 
   register_tool(tool_view: ToolView): void {
     const {model: tool} = tool_view
@@ -207,6 +209,7 @@ export class UIEventBus {
       throw new Error(`${tool} already registered`)
     } else {
       this._tools.set(tool, tool_view)
+      this._key_bindings.set(tool_view, tool_view.key_bindings())
     }
   }
 
@@ -801,9 +804,87 @@ export class UIEventBus {
     this.trigger(this.keydown, this._key_event(event))
   }
 
+  protected _key_state: "cmd" | "none" = "none"
+  protected _key_buffer: string = ""
+  protected _cmd_start: string = ":"
+
   on_key_up(event: KeyboardEvent): void {
+    const ev = this._key_event(event)
+
     // NOTE: keyup event triggered unconditionally
-    this.trigger(this.keyup, this._key_event(event))
+    this.trigger(this.keyup, ev)
+
+    /*
+    const no_modifiers = (ev: KeyEvent) => {
+      const {ctrl, shift, alt} = ev.modifiers
+      return !ctrl && !shift && !alt
+    }
+    */
+
+    const is_alphabetic = (key: Keys): boolean => {
+      return key.length == 1 && (key == "_" || ("a" <= key && key <= "z") || ("A" <= key && key <= "Z") || ("0" <= key && key <= "9"))
+    }
+
+    const find_cmd = (cmd: string): KeyBinding | null => {
+      for (const [_tool_view, bindings] of this._key_bindings.entries()) {
+        for (const binding of bindings) {
+          if (binding.cmd == cmd) {
+            return binding
+          }
+        }
+      }
+      return null
+    }
+
+    switch (ev.key) {
+      case "Ctrl":
+      case "Shift":
+      case "Alt":
+        return
+      default:
+    }
+
+    if (this._key_state == "cmd") {
+      if (ev.key == "Enter") {
+        const binding = find_cmd(this._key_buffer)
+        if (binding != null) {
+          if (binding.if?.() !== false) {
+            void binding.action()
+          }
+        } else {
+          console.warn(`${this._cmd_start}${this._key_buffer} command not found`)
+        }
+        this._key_state = "none"
+        this._key_buffer = ""
+      } else if (is_alphabetic(ev.key)) {
+        this._key_buffer += ev.key
+      }
+
+      return
+    }
+
+    if (ev.key == this._cmd_start/* && no_modifiers(ev)*/) {
+      //assert(this._key_state == "none")
+      this._key_state = "cmd"
+      this._key_buffer = ""
+      return
+    }
+
+    const bindings: KeyBinding[] = []
+    for (const [_tool_view, bindings] of this._key_bindings.entries()) {
+      for (const binding of bindings) {
+        const key = binding.keys[0]
+        if (key == ev.key && binding.if?.() !== false) {
+          bindings.push(binding)
+        }
+      }
+    }
+
+    const prioritized = sort_by(bindings, (binding) => binding.priority ?? 0)
+
+    for (const binding of prioritized) {
+      void binding.action()
+    }
   }
 
   on_focus(): void {
