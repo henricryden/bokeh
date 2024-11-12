@@ -1,0 +1,12 @@
+.. _release-3-6-2:
+
+3.6.2
+=====
+
+Bokeh version ``3.6.2`` (November 2024) is a patch release that fixes a number of
+minor bugs/regressions and documentation issues.
+
+Changes
+-------
+
+* Fixed a regression in `ScaleBar` positioning (:bokeh-pull:`14154`)
