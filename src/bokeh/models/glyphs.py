@@ -424,11 +424,11 @@ class Block(LRTBGlyph):
     _args = ('x', 'y', 'width', 'height')
 
     x = NumberSpec(default=field("x"), help="""
-    The x-coordinates of the centers of the blocks.
+    The x-coordinates of each block's corner
     """)
 
     y = NumberSpec(default=field("y"), help="""
-    The y-coordinates of the centers of the blocks.
+    The y-coordinates of each block's corner
     """)
 
     width = DistanceSpec(default=1, help="""
