@@ -424,7 +424,7 @@ class Block(LRTBGlyph):
     _args = ('x', 'y', 'width', 'height')
 
     x = NumberSpec(default=field("x"), help="""
-    The x-coordinates of each block's lower-left corner
+    The x-coordinates of each block's lower-left corner.
     """)
 
     y = NumberSpec(default=field("y"), help="""
