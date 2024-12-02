@@ -428,7 +428,7 @@ class Block(LRTBGlyph):
     """)
 
     y = NumberSpec(default=field("y"), help="""
-    The y-coordinates of each block's lower-left corner
+    The y-coordinates of each block's lower-left corner.
     """)
 
     width = DistanceSpec(default=1, help="""
